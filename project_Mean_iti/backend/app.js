@@ -1,12 +1,16 @@
+// const asyncHandler = require('express-async-handler');
 const mongoose = require("mongoose");
 const express=require ("express"); 
-
+var cors = require("cors");
 const Product=require("./models/product");
 const User = require("./models/user");
+const bcrypt = require("bcryptjs")
 
 const server = express()
 server.use(express.urlencoded({extended:true}));
 server.use(express.json());
+server.use(cors());
+
 
 mongoose.connect("mongodb+srv://pharmacy:mnh123@cluster1.jjj0nxo.mongodb.net/test")
 .then(()=>{
@@ -16,15 +20,73 @@ mongoose.connect("mongodb+srv://pharmacy:mnh123@cluster1.jjj0nxo.mongodb.net/tes
 });
 
 //pharmacy products
-server.get("/products",function(req,res){
-    Product.find().then((productData)=>{
-        res.send(productData);
-    }).catch((err)=>{
-        res.send({
-            error:"Error Getting all products"
-        })
+server.get("/products", function (req, res) {
+  var pageNumber = +req.query.pageNumber;
+  var pageSize = +req.query.pageSize;
+  var requiredProducts = Product.find();
+  var fetchedProducts;
+  if (pageNumber && pageSize) {
+    requiredProducts.skip(pageSize * (pageNumber - 1)).limit(pageSize);
+  }
+  requiredProducts
+    .then((productsData) => {
+      fetchedProducts = productsData;
+      return Product.count();
     })
+    .then((productsCount) => {
+      res.send({
+        totalProducts: productsCount,
+        products: fetchedProducts,
+      });
+    })
+    .catch((err) => {
+      res.send({
+        error: "Error getting product",
+      });
+    });
 });
+
+server.get('/product/:id',function(req,res){
+  let id = req.params.id;
+  Product.findById(id)
+  .then((product)=>{
+    res.send(product)
+  }).catch(err=>{
+    console.log(err);
+  })
+})
+
+server.get("/search/:searchTerm", 
+  async (req, res) => {
+    const searchRegex = new RegExp(req.params.searchTerm, 'i');
+    const data = await Product.find({name: {$regex:searchRegex}})
+    return res.status(200).json(data);
+  }
+)
+
+server.get('/productCategory',function(req,res){
+  var category = req.query.category;
+  console.log(category);
+  Product.find({type:category})
+  .then(products=>{
+    res.send(products)
+    console.log(products);
+  }).catch(err=>{
+    console.log(err);
+  })
+})
+
+
+server.get("/productCategory/:searchTerm", 
+  async (req, res) => {
+    var category = req.query.category
+    var search = req.params.searchTerm
+    const searchRegex = new RegExp(req.params.searchTerm, 'i');
+    const data = await Product.find({type:category , name: {$regex:searchRegex}})
+    res.send(data);
+  }
+)
+
 
 server.delete("/products/:id", function (req, res) {
     let prodId = req.params.id;
@@ -40,30 +102,6 @@ server.delete("/products/:id", function (req, res) {
 });
 
 
-server.post("/addProduct",function(req, res){
-    let data = req.body;
-    let newProduct= new Product({
-        name:data.name,
-        brand:data.brand,
-        type:data.type,
-        usage:data.usage,
-        description:data.description,
-        photo_link:data.photo_link,
-        price:+data.price,
-        rating:+rating,
-    });
-
-    newProduct
-    .save()
-    .then((msg) => {
-      res.send({
-        msg: "product added successfuly",
-      });
-    })
-    .catch((err) => {
-      console.log(err);
-    });
-})
 server.put("/product/edit/:id",function(req,res){
   let data = req.body;
   let pid = data.id;
@@ -71,7 +109,7 @@ server.put("/product/edit/:id",function(req,res){
     _id: pid
   },{
     name:data.name,
-    brand:data.brand,
+    manufaturer:data.manufaturer,
     type:data.type,
     usage:data.usage,
     description:data.description,
@@ -84,8 +122,54 @@ server.put("/product/edit/:id",function(req,res){
     err:"Error updating";
   });
 });
-//user
 
+server.get('/',function(req,res){
+  //find({"likes":{$gt:50}})
+  Product.find({rating:{$gte:4.8}})
+  .then(products=>{
+    res.send(products)
+  }).catch(err=>{
+    console.log(err);
+  })
+})
+
+
+//user
+server.post('/sign-up', (req,res) => {
+
+  bcrypt.hash(req.body.password, 10)
+      .then(hash => {
+          const user = new User({
+              email: req.body.email,
+              password: hash
+          })
+
+          user.save()
+          .then(result => {
+              res.status(201).json({
+                  message: 'User created',
+                  result: result
+              })
+          })
+          .catch(err => {
+              res.status(500).json({
+                  error: err
+              })
+          })
+      })
+})
+
+
+server.post('/login',function(req,res){
+  let Email = req.body.email;
+  let Password = req.body.password;
+ User.findOne({ email:Email ,password:Password})
+  .then((User)=>{
+    res.send(User)
+  }).catch(err=>{
+    console.log(err);
+  })
+})
 
 server.get("/user",function(req,res){
   User.find()

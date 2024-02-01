@@ -1,40 +1,61 @@
-import { Component , Input} from '@angular/core';
+import { Component} from '@angular/core';
 import { ProductService } from '../product.service';
-import { HeaderComponent } from '../header/header.component';
+import { ActivatedRoute } from '@angular/router';
+import { PageEvent } from '@angular/material/paginator';
 
 @Component({
   selector: 'app-all-products',
   templateUrl: './all-products.component.html',
-  template:`<app-header></app-header>`,
   styleUrls: ['./all-products.component.css']
 })
 export class AllProductsComponent{
-  allProducts:any[] = []; 
+  allProducts: any[] = []; 
   allProdData:any[] = [];
-  @Input() products!: AllProductsComponent;
+  searchedProds : any[] = []
+  totalProducts: number = 20;
+  pageSize = 5;
+  currentPage:number=1;
 
-  search!: HeaderComponent;
-  private searchVal = "";
-  set searchValue(searchVal:string){
-     this.searchVal = searchVal;
-     this.searchAllProducts(searchVal)
-  } 
-  constructor(private productService:ProductService){}
+  public searchVal = "";
+
+  constructor(private productService:ProductService ,private route: ActivatedRoute){
+   
+  }
     ngOnInit(): void {
-       this.allProducts = this.productService.getAllProducts() ;
-       this.allProdData = this.allProducts;
-       this.search = new HeaderComponent(this.productService);
-    }   
-    searchAllProducts(searchVal:string){
-      if(searchVal == ""){
-        this.allProducts = this.allProdData;
-     }else{
-       this.allProducts = this.allProducts.filter((item) =>{
-          if(item.name.toLocaleLowerCase().includes(searchVal.toLocaleLowerCase())){
-              return item;
-          }
-       })}
+      // let products :Observable<any>;
+      this.route.params.subscribe((params) => {
+        if(params['searchTerm'])
+            this.productService.searchAllProducts(params['searchTerm']).subscribe({
+               next: (data) => {
+                  this.allProducts = data
+               }
+          });
+        else
+           this.productService.getAllProducts(this.currentPage,this.pageSize).subscribe({
+            next: (data) => {
+              console.log(data);
+              this.allProducts = data.products;
+              this.totalProducts=data.totalProducts;
+            },
+          });
+        
+       
+      })
+     }
+     changePage(pageData:PageEvent){
+      this.currentPage=pageData.pageIndex+1;
+      this.pageSize=pageData.pageSize;    
+      this.productService.getAllProducts(this.currentPage ,this.pageSize).subscribe({
+        next: (data) => {
+          console.log(data);
+          this.allProducts = data.products;
+          this.totalProducts=data.totalProducts;
+        },
+      });
+      
     }
+    }   
   
-}
+   
+
 

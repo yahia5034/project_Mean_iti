@@ -1,2 +1,1 @@
-# project_Mean_iti
-an angular + node + mongoo project
+# Final-Project-ITI

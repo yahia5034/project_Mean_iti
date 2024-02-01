@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 import { AllProductsComponent } from './all-products/all-products.component';
+import {HttpClient} from '@angular/common/http'
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -633,47 +635,59 @@ export class ProductService {
   ]
   allProducts: any[] = []
   returnedObjects: any[] = []
+  CartItems:any[]=[];
+  CartItemsId:any[]=[];
+  search = ""
+  constructor(public http : HttpClient) { }
 
-  constructor() { }
-  getAllProducts() {
-    return this.pharmacyData;
+  getAllProducts(pageNumber:number , pageSize:number): Observable<any> {
+    let querydata=`pageNumber=${pageNumber}&pageSize=${pageSize}`
+   return this.http.get(`http://localhost:4000/products?${querydata}`);
+ }
+
+
+  getHighRatedProduct():Observable<any>{
+    return this.http.get(`http://localhost:4000/`);
   }
-  getHighRatedProducts() {
-    for (const item of this.pharmacyData) {
-      if (item.rating >= 4.8)
-        this.returnedObjects.push(item)
+
+  getProductByID(_id:string): Observable<any>{
+    return this.http.get(`http://localhost:4000/product/${_id}`)
+  }
+
+  searchAllProducts(search:string): Observable<any>{
+       return this.http.get(`http://localhost:4000/search/` + search)
+     }
+  
+  
+
+  getCategory(category:string):Observable<any>{
+    return this.http.get(`http://localhost:4000/productCategory/`,{params:{category}});
+  }
+
+    getAllCatBySearchTerm(category:string , searchTerm:string):Observable<any>{
+      return  this.http.get(`http://localhost:4000/productCategory/${searchTerm}`, {params:{category}})
     }
-    return this.returnedObjects;
-  }
-  getProductById(id:number) {
-    return this.pharmacyData.find(product => product.id === id)
-  }
- 
-  getCategory(category:string){
-   let allSelectedCategory:any[] =[]
-       this.pharmacyData.filter((select)=>{
-         if(select.type===category){
-           allSelectedCategory.push(select);
-         }
-       })
-       console.log(allSelectedCategory);
-       
-       return allSelectedCategory;
-       
-     } 
- 
-//   searchAllProducts(searchVal: string): any {
-//     if (searchVal == "") {
-//       return this.getAllProducts();
-//     } else {
-//       this.allProducts = this.getAllProducts()
-//         .filter((item) => {
-//           if (item.name.toLocaleLowerCase().includes(searchVal.toLocaleLowerCase())) {
-//             // this.allProducts.push(item)
-//             return item;
-//       }})
-//     }  
-//   }
 
+
+    addProduct(p:any):Observable<any>{
+      return this.http.post("http://localhost:4000/addProduct",p);
+    } 
+    editProduct(p:any,id:any):Observable<any>{
+      return this.http.put(`http://localhost:4000/product/edit/${id}`,p)
+    }
+    addToCart(ProductId:any){
+      this.CartItemsId.push(ProductId);
+     }
+    getCart(){
+      return this.CartItemsId;
+     }
+     removeFromCart(product:any){
+      this.CartItems.map((a:any,index:any)=>{
+        if (product.id==a.id){
+          this.CartItems.splice(index,1)
+        }
+      })
+      return this.CartItems
+     }
 }
 

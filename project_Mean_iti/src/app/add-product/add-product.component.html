@@ -1,79 +1,55 @@
 <div class="page">
-    
-    <!-- <div class="header">
-     <div class="header__search">
-       <input type="text" placeholder="Search..." />
-     </div>
-     <div class="header__date">
-       <span id="date"></span>
-     </div>
-     <div class="header__user">
-       Hello, Admin <svg class="lnr lnr-cog icon"><use xlink:href="#lnr-cog"></use></svg>
-     </div>
-   </div> -->
-   
    <div class="content">
      <div class="title" id="title-bar">
        <div class="title__text">
-         <!-- <span>Editing Content</span> -->
          <h1>{{pageTitle}}</h1>
        </div>
-       <!-- <div class="title__extras">
-         <svg class="lnr lnr-star icon"><use xlink:href="#lnr-star"></use></svg> Featured post
-       </div> -->
      </div>
      
      <div class="content__main">
        <div class="content__main-page">
          <div class="box">
-           <form>
-            <!-- name:String,
-    brand:String,
-    type:String,
-    usage:String,
-    description:String,
-    photo_link:String,
-    price:Number,
-    rating:Number, -->
+           <form  (ngSubmit)="onSubmit(postForm.value)" #postForm ="ngForm">
              <div class="field__group">
                <label for="name">Name</label>
-               <input type="text" name="name" id="name">
+               <input type="text" name="name" id="name" ngModel required>
              </div>
              <div class="field__group">
-               <label for="brand">Brand</label>
-               <input type="text" name = "brand" id ="brand">
+               <label for="manufacturer">manufacturer</label>
+               <input type="text" name = "manufacturer" id ="manufacturer" ngModel required>
              </div>
              <div class="field__group">
                 <label for="type">Type</label>
-                <input type="text" name = "type" id ="type">
+                <input type="text" name = "type" id ="type" ngModel required>
               </div>
               <div class="field__group">
                 <label for="usage">Usage</label>
-                <textarea type="text" name = "usage" id ="usage"></textarea>
+                <textarea type="text" name = "usage" id ="usage" ngModel required></textarea>
               </div>
               <div class="field__group">
                 <label for="description">Description</label>
-                <textarea type="text" name = "description" id ="description"></textarea>
+                <textarea type="text" name = "description" id ="description" ngModel required></textarea>
               </div>
               <div class="field__group">
                 <label for="price">Price</label>
-                <input type="text" name = "price" id ="price">
+                <input type="number" name = "price" id ="price" ngModel required>
               </div>
               <div class="field__group">
                 <label for="rating">Rating</label>
-                <input type="text" name = "rating" id ="rating">
+                <input type="number" name = "rating" id ="rating" ngModel required>
               </div>
-             <!-- <div class="field__group">
-               <label for="photo_link">Photo Link</label>
-               <input type="text" name="photo_link" id="photo_link">
-             </div> -->
              <div class="field__group">
+               <label for="photo_link">Photo Link</label>
+               <input type="text" name="photo_link" id="photo_link" ngModel required>
+             </div>
+             <!-- <div class="field__group">
                <label>Image</label>
                <div class="imagedrop">
-                 <svg class="lnr lnr-cloud-upload icon"name="photo_link" id="photo_link"><use xlink:href="#lnr-cloud-upload"></use></svg>
+                 <svg class="lnr lnr-cloud-upload icon"name="photo_link" id="photo_link" ><use xlink:href="#lnr-cloud-upload"></use></svg>
                  <span>Drop image here to upload</span>
                </div>
-             </div>
+             </div> -->
+             <button id="submit" class="button" >Add Product</button>
            </form>
          </div>
        </div>
@@ -95,7 +71,7 @@
                Now
              </a>
            </div>
-           <button id="submit" class="button">Save</button>
+           <button id="submit" class="button"></button>
            
          </div>
        </div>
@@ -103,7 +79,7 @@
      
    </div>
  </div>
- <script>
+ <!-- <script>
    window.onscroll = function() {getSticky()};
 
 var titleBar = document.getElementById("title-bar");
@@ -130,4 +106,4 @@ y = n.getFullYear();
 m = n.getMonth() + 1;
 d = n.getDate();
 document.getElementById("date").innerHTML = m + "/" + d + "/" + y;
- </script>
+ </script> -->
